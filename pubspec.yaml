@@ -1,0 +1,28 @@
+name: smart_health
+description: "Smart Health Guard - Emergency Monitoring without camera"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_tts: ^4.2.3
+  url_launcher: ^6.2.5
+  just_audio: ^0.10.4
+  tflite_flutter: ^0.11.0         
+  #tflite_flutter_helper: ^0.3.1  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fall_model.tflite
+    - assets/alarm.mp3
