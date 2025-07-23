@@ -1,11 +1,10 @@
-import 'package:tflite_flutter/tflite_flutter.dart';
 import 'dart:typed_data';
 
 class FallModelTester {
-late Interpreter interpreter;
+// late Interpreter interpreter;
 
 Future<void> loadModel() async {
-interpreter = await Interpreter.fromAsset('fall_model.tflite');
+// interpreter = await Interpreter.fromAsset('fall_model.tflite');
 print('✅ Model loaded');
 }
 
@@ -17,7 +16,7 @@ var output = List.filled(1 * 2, 0.0).reshape([1, 2]);
 lua
 Copy
 Edit
-interpreter.run(input, output);
+// interpreter.run(input, output);
 
 print('🧠 Model Output: $output');
 
@@ -29,6 +28,6 @@ if (output[0][0] > output[0][1]) {
 }
 
 void close() {
-interpreter.close();
+// interpreter.close();
 }
 }
