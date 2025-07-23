@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
-
-
 import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyService {
@@ -21,7 +19,7 @@ class EmergencyService {
 
   void startMonitoring() {
     _startCheckCycle();
-    _startFallDetectionSimulation(); // Start background simulation
+    _startFallDetectionSimulation(); // Replace this with actual ML detection later
   }
 
   void _startCheckCycle() {
@@ -30,53 +28,70 @@ class EmergencyService {
       Duration(minutes: intervalMinutes),
       (_) => _askIfOkay(),
     );
-    _askIfOkay(); // immediate check on start
+    _askIfOkay(); // First check immediately
   }
 
   void _askIfOkay() async {
-    if (_waitingForReply) return; // already waiting
+    if (_waitingForReply) return;
 
     _waitingForReply = true;
     await _tts.speak("Are you okay?");
-    print("⏳ Waiting 1 minute for user response...");
+    print("🔔 Voice prompt sent.");
 
-    _responseTimer = Timer(const Duration(minutes: 1), () {
+    _responseTimer = Timer(const Duration(minutes: 1), () async {
       if (_waitingForReply) {
-        triggerEmergency();
+        print("🔁 Asking again...");
+        await _tts.speak("Are you okay? Please respond.");
+        _responseTimer = Timer(const Duration(minutes: 1), () {
+          if (_waitingForReply) triggerEmergency();
+        });
       }
     });
   }
 
   void userResponded() {
-    print("✅ User confirmed OK");
+    print("✅ User confirmed okay.");
     _waitingForReply = false;
     _responseTimer?.cancel();
     _tts.speak("Thank you. Stay safe.");
   }
 
-  void triggerEmergency() {
+  void triggerEmergency() async {
     print("🚨 Emergency triggered!");
     _waitingForReply = false;
     _responseTimer?.cancel();
-    _tts.speak("Emergency! Calling now.");
+    await _tts.speak("Emergency! Contacting help now.");
+
     final player = AudioPlayer();
-    player.setAsset('assets/alarm.mp3');
+    await player.setAsset('assets/alarm.mp3');
     player.play();
 
-    _makeCall();
+    _makeCall("108");
+    _makeCall(emergencyPhone);
+    _sendLocation();
   }
 
-  void _makeCall() async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: emergencyPhone);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
+  void _makeCall(String number) async {
+    final Uri uri = Uri(scheme: 'tel', path: number);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
-      print("❌ Could not launch call.");
+      print("❌ Could not launch phone call.");
+    }
+  }
+
+  void _sendLocation() async {
+    const double lat = 12.9716;
+    const double lng = 77.5946;
+    final Uri mapUri = Uri.parse('https://www.google.com/maps?q=$lat,$lng');
+    if (await canLaunchUrl(mapUri)) {
+      await launchUrl(mapUri);
+    } else {
+      print("❌ Could not launch location.");
     }
   }
 
   void _startFallDetectionSimulation() {
-    // Replace this with actual AI model trigger in future
     Future.delayed(const Duration(seconds: 30), () {
       print("🔴 Simulated fall detected.");
       _askIfOkay();

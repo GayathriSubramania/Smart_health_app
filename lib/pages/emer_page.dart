@@ -13,9 +13,8 @@ class _EmergencyPageState extends State<EmergencyPage> {
   Duration? _selectedInterval;
   String? _emergencyPhone;
   EmergencyService? emergencyService;
-                                                                                                                       
-  final TextEditingController phoneController = TextEditingController();
 
+  final TextEditingController phoneController = TextEditingController();
 
   @override
   void dispose() {
@@ -68,7 +67,8 @@ class _EmergencyPageState extends State<EmergencyPage> {
   }
 
   Future<void> _setPhoneNumber() async {
-    final TextEditingController tempController = TextEditingController(text: _emergencyPhone);
+    final TextEditingController tempController =
+        TextEditingController(text: _emergencyPhone);
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -100,11 +100,13 @@ class _EmergencyPageState extends State<EmergencyPage> {
   }
 
   void _startMonitoring() {
-    if (_selectedInterval == null || _emergencyPhone == null || _emergencyPhone!.isEmpty) {
+    if (_selectedInterval == null ||
+        _emergencyPhone == null ||
+        _emergencyPhone!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please set interval and phone number')),
       );
-      return;0
+      return;
     }
 
     emergencyService = EmergencyService(
@@ -114,17 +116,17 @@ class _EmergencyPageState extends State<EmergencyPage> {
     emergencyService!.startMonitoring();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Monitoring started")),
+      const SnackBar(content: Text("✅ Monitoring started")),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5E9), // light green background
+      backgroundColor: const Color(0xFFF0F8F7),
       appBar: AppBar(
         title: const Text('Emergency Monitor'),
-        backgroundColor: const Color(0xFF66BB6A), // green shade
+        backgroundColor: const Color(0xFF26A69A),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -168,19 +170,27 @@ class _EmergencyPageState extends State<EmergencyPage> {
                 children: [
                   ElevatedButton(
                     onPressed: _startMonitoring,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 239, 132, 175)5, 199, 104, 123)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 14),
+                    ),
                     child: const Text('Start Monitoring'),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: () => emergencyService?.userResponded(),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey,
+                    ),
                     child: const Text('I am Okay'),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: () => emergencyService?.triggerEmergency(),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
                     child: const Text('Trigger Alarm Now'),
                   ),
                 ],
@@ -195,7 +205,7 @@ class _EmergencyPageState extends State<EmergencyPage> {
           await _pickInterval();
         },
         tooltip: 'Edit Settings',
-        backgroundColor: const Color(0xFF66BB6A),
+        backgroundColor: const Color(0xFF26A69A),
         child: const Icon(Icons.edit),
       ),
     );
