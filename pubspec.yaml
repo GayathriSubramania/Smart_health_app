@@ -11,18 +11,23 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_phone_direct_caller: ^2.1.1
+  permission_handler: ^11.0.0
+  fluttertoast: ^8.2.4
   flutter_tts: ^4.0.0
   just_audio: ^0.10.4
-  # speech_to_text: ^7.2.0
   tflite_flutter: 0.11.0
   url_launcher: ^6.2.7
- 
+  #sms_maintained: ^0.2.4
+  telephony: ^0.2.0 
+  flutter_audio_capture: ^1.0.2+1
+
+
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

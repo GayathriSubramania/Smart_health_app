@@ -1,5 +1,4 @@
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'dart:typed_data';
 
 class FallDetectorService {
   Interpreter? _interpreter;

@@ -130,76 +130,113 @@ class _EmergencyPageState extends State<EmergencyPage> {
 
   @override
   Widget build(BuildContext context) {
+    const lavender = Color(0xFFE6D6FA);
+    const purple = Color.fromARGB(255, 147, 91, 237);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8F7),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Emergency Monitor'),
-        backgroundColor: const Color(0xFF26A69A),
+        backgroundColor: purple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 2,
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: lavender,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
               child: ListTile(
                 title: Text(
                   _emergencyPhone == null || _emergencyPhone!.isEmpty
                       ? 'No phone number set'
                       : 'Phone: $_emergencyPhone',
+                  style: const TextStyle(color: Colors.black),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(Icons.edit, color: Colors.black),
                   onPressed: _setPhoneNumber,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Card(
-              color: Colors.white,
-              elevation: 2,
+            Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: lavender,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
               child: ListTile(
                 title: Text(
                   _selectedInterval == null
                       ? 'No interval set'
                       : 'Interval: ${_selectedInterval!.inMinutes} min',
+                  style: const TextStyle(color: Colors.black),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.access_time),
+                  icon: const Icon(Icons.access_time, color: Colors.black),
                   onPressed: _pickInterval,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
             Center(
               child: Column(
                 children: [
-                  ElevatedButton(
-                    onPressed: _startMonitoring,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 14),
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      onPressed: _startMonitoring,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: purple,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        textStyle: const TextStyle(color: Colors.white),
+                      ),
+                      child: const Text('Start Monitoring',
+                          style: TextStyle(color: Colors.white)),
                     ),
-                    child: const Text('Start Monitoring'),
                   ),
                   const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () => emergencyService?.userResponded(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey,
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      onPressed: () => emergencyService?.userResponded(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('I am Okay',
+                          style: TextStyle(color: Colors.white)),
                     ),
-                    child: const Text('I am Okay'),
                   ),
                   const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () => emergencyService?.triggerEmergency(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                  SizedBox(
+                    width:200,
+                    child: ElevatedButton(
+                      onPressed: () => emergencyService?.triggerEmergency(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Trigger Alarm Now',
+                          style: TextStyle(color: Colors.white)),
                     ),
-                    child: const Text('Trigger Alarm Now'),
                   ),
                 ],
               ),
@@ -213,7 +250,7 @@ class _EmergencyPageState extends State<EmergencyPage> {
           await _pickInterval();
         },
         tooltip: 'Edit Settings',
-        backgroundColor: const Color(0xFF26A69A),
+        backgroundColor: purple,
         child: const Icon(Icons.edit),
       ),
     );

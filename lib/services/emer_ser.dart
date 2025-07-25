@@ -1,18 +1,20 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:telephony/telephony.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-
-import 'package:tflite_flutter/src/util/list_shape_extension.dart'; 
+import 'audio_monitor.dart';
 
 class EmergencyService {
   final int intervalMinutes;
   final String emergencyPhone;
+  final Telephony telephony = Telephony.instance;
+
   final void Function()? onEmergencyTriggered;
+  late RealTimeAudioMonitor _audioMonitor;
 
   final FlutterTts _tts = FlutterTts();
   final AudioPlayer _player = AudioPlayer();
@@ -20,7 +22,6 @@ class EmergencyService {
 
   Timer? _intervalTimer;
   Timer? _responseTimer;
-  Timer? _mlMonitorTimer;
 
   bool _waitingForReply = false;
 
@@ -33,7 +34,15 @@ class EmergencyService {
   Future<void> startMonitoring() async {
     await _loadModel();
     _startCheckCycle();
-    _startMLMonitoring();
+
+    _audioMonitor = RealTimeAudioMonitor(
+      interpreter: _interpreter!,
+      onFallDetected: () {
+        print('🎤 Fall detected from real-time audio!');
+        _askIfOkay();
+      },
+    );
+    _audioMonitor.start();
   }
 
   Future<void> _loadModel() async {
@@ -41,7 +50,7 @@ class EmergencyService {
       _interpreter = await Interpreter.fromAsset('fall_model.tflite');
       print('✅ Model loaded');
     } catch (e) {
-      print('❌ Error loading model: $e');
+      print('❌ Error loading model: \$e');
     }
   }
 
@@ -51,7 +60,7 @@ class EmergencyService {
       Duration(minutes: intervalMinutes),
       (_) => _askIfOkay(),
     );
-    _askIfOkay(); // first time
+    _askIfOkay(); // immediate first-time check
   }
 
   void _askIfOkay() async {
@@ -77,6 +86,37 @@ class EmergencyService {
     _tts.speak("Thank you. Stay safe.");
   }
 
+  Future<void> sendEmergencySMS(String number, String message) async {
+    final bool? permission = await telephony.requestSmsPermissions;
+
+    if (permission != null && permission) {
+      try {
+        telephony.sendSms(
+          to: number,
+          message: message,
+          statusListener: (SendStatus status) {
+            if (status == SendStatus.SENT) {
+              print("📩 SMS sent to \$number");
+              Fluttertoast.showToast(msg: "📤 SMS sent to \$number");
+            } else if (status == SendStatus.DELIVERED) {
+              print("✅ SMS delivered to \$number");
+              Fluttertoast.showToast(msg: "✅ SMS delivered");
+            } else {
+              print("❌ SMS failed");
+              Fluttertoast.showToast(msg: "❌ SMS failed");
+            }
+          },
+        );
+      } catch (e) {
+        print("❌ Error sending SMS: \$e");
+        Fluttertoast.showToast(msg: "❌ Error sending SMS");
+      }
+    } else {
+      print("❌ SMS permission not granted");
+      Fluttertoast.showToast(msg: "❌ SMS permission not granted");
+    }
+  }
+
   void triggerEmergency() async {
     _waitingForReply = false;
     _responseTimer?.cancel();
@@ -87,47 +127,24 @@ class EmergencyService {
 
     onEmergencyTriggered?.call();
 
-    _makeCall(emergencyPhone);
+    // Step 1: Call emergency number
+    await FlutterPhoneDirectCaller.callNumber(emergencyPhone);
+
+    // Step 2: Wait 10 seconds then send SMS
+    Future.delayed(const Duration(seconds: 10), () {
+      sendEmergencySMS(
+        emergencyPhone,
+        "🚨 Emergency Alert!\nThe elder is not responding. Ambulance has been called.\nPlease check immediately!",
+      );
+    });
   }
-
-  void _makeCall(String number) async {
-  await FlutterPhoneDirectCaller.callNumber(number);
-}
-
-
-  void _startMLMonitoring() {
-    _mlMonitorTimer?.cancel();
-    _mlMonitorTimer = Timer.periodic(
-      const Duration(seconds: 10),
-      (_) => _runFallDetection(),
-    );
-  }
-
-  void _runFallDetection() {
-if (_interpreter == null) return;
-
-final input = List.filled(100, 0.0).reshape([1, 100]);
-final output = List.filled(1, 0.0).reshape([1, 1]);
-
-_interpreter!.run(input, output);
-
-final result = output[0][0];
-print('📈 ML Model Output: $result');
-
-if (result > 0.5) {
-print('⚠️ Fall detected!');
-_askIfOkay();
-}
-}
 
   void dispose() {
     _intervalTimer?.cancel();
     _responseTimer?.cancel();
-    _mlMonitorTimer?.cancel();
     _tts.stop();
     _player.dispose();
     _interpreter?.close();
+    _audioMonitor.stop();
   }
 }
-
-
